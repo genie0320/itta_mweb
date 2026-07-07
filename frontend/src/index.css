@@ -305,3 +305,57 @@ main {
   background: transparent !important;
 }
 
+/* Public Transit Timeline Flow */
+.transit-flow-wrapper {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.transit-flow-title {
+  font-size: 0.8rem;
+  color: #94a3b8 !important;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0 !important;
+  letter-spacing: -0.01em;
+}
+
+.transit-flow-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
+}
+
+.transit-flow-timeline::-webkit-scrollbar {
+  height: 4px;
+}
+
+.transit-flow-timeline::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 9999px;
+}
+
+.transit-step-badge {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.transit-arrow {
+  color: #475569;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+

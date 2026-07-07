@@ -101,8 +101,23 @@ async def get_nearby_attractions(lat: float, lng: float, radius: int):
             
             festivals = filtered_festivals
 
-        # 3. 두 리스트 병합 및 포맷팅 (프론트엔드 호환 포맷)
-        combined_items = attractions + festivals
+        # 3. 로컬 엑셀 축제 데이터 조회 및 온라인 API 결과와 병합
+        from services.local_festival_service import get_nearby_local_festivals
+        local_festivals = get_nearby_local_festivals(lat, lng, radius)
+        
+        combined_items = attractions + festivals + local_festivals
+        
+        # 4. 타이틀 기반 중복 제거 (API 축제와 로컬 축제의 명칭 공백 제거 비교)
+        seen_titles = set()
+        unique_items = []
+        for item in combined_items:
+            # "[로컬] " 접두사 및 공백 제거한 클린 타이틀로 중복 체크
+            clean_title = item.get("title", "").replace("[로컬]", "").replace(" ", "").strip()
+            if clean_title not in seen_titles:
+                seen_titles.add(clean_title)
+                unique_items.append(item)
+                
+        combined_items = unique_items
         
         return {
             "response": {
