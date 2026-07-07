@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tinysherpa-backend
+    volumes:
+      - ./backend:/app
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tinysherpa-frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # 로컬 node_modules가 컨테이너의 node_modules를 덮어쓰지 못하도록 바인드 방지
+    ports:
+      - "5173:5173"
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: tinysherpa-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
