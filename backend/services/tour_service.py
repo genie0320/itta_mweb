@@ -32,12 +32,11 @@ async def get_nearby_attractions(lat: float, lng: float, radius: int):
     url = "https://apis.data.go.kr/B551011/KorService2/locationBasedList2"
     base_params = {
         "serviceKey": TOUR_API_KEY,
-        "numOfRows": 15,
+        "numOfRows": 40,
         "pageNo": 1,
         "MobileOS": "ETC",
         "MobileApp": "TinySherpa",
         "_type": "json",
-        "listYN": "Y",
         "arrange": "O",  # O = 거리순 정렬
         "mapX": lng,
         "mapY": lat,
