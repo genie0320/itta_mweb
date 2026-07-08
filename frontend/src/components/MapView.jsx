@@ -77,6 +77,18 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
         }
       });
 
+      // 맵 생성 완료 즉시 사용자 위치(파란색) 및 탐색지(주황색) 마커 핀 강제 강제 주입
+      if (userCoords) {
+        userMarkerRef.current = L.marker([userCoords.lat, userCoords.lng], { icon: userIcon })
+          .addTo(map)
+          .bindPopup('<b>내 위치</b> (출발지)');
+      }
+      if (searchCoords) {
+        searchMarkerRef.current = L.marker([searchCoords.lat, searchCoords.lng], { icon: searchIcon })
+          .addTo(map)
+          .bindPopup('<b>탐색 중심지 (반경 150km)</b>');
+      }
+
       mapRef.current = map;
       markersLayerRef.current = L.layerGroup().addTo(map);
     } catch (err) {

@@ -74,10 +74,16 @@ function App() {
     alert(`선택한 장소: ${dest.title}\n위도: ${dest.mapy}\n경도: ${dest.mapx}`);
 
     setSelectedDest(dest);
-    setRouteInfo(null);
+    setRouteInfo(null); // 새 방문지 선택 시 기존 경로 정보 리셋
+  };
+
+  // 3분면의 [경로탐색] 수동 클릭 핸들러
+  const handleFindRoute = async () => {
+    if (!selectedDest) return;
     setLoading(true);
+    setRouteInfo(null);
     try {
-      const res = await fetch(`/api/route?sx=${searchCoords.lng}&sy=${searchCoords.lat}&ex=${dest.mapx}&ey=${dest.mapy}`);
+      const res = await fetch(`/api/route?sx=${searchCoords.lng}&sy=${searchCoords.lat}&ex=${selectedDest.mapx}&ey=${selectedDest.mapy}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setRouteInfo(data);
@@ -110,46 +116,70 @@ function App() {
       {errorMsg && <div style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.85rem', textAlign: 'center', padding: '0 1rem' }}>{errorMsg}</div>}
       
       {myCoords ? (
-        <main>
-          {/* 수동 검색 실행용 [주변검색] 버튼 배치 */}
-          <div className="search-control-bar">
-            <button onClick={handleSearchNearby} className="bare-btn primary-bare-btn">주변검색</button>
+        <div className="main-layout">
+          {/* 1분면 (4/10 너비): 지도 및 탐색 컨트롤 */}
+          <div className="layout-panel panel-map" style={{ flex: 4 }}>
+            <div className="search-control-bar" style={{ marginBottom: '0.75rem' }}>
+              <button onClick={handleSearchNearby} className="bare-btn primary-bare-btn" style={{ width: '100%' }}>주변검색 (150km)</button>
+            </div>
+            <MapView 
+              userCoords={myCoords} 
+              searchCoords={searchCoords}
+              items={visibleItems} 
+              selectedDest={selectedDest} 
+              onSelect={handleSelectDestination} 
+              onMapClick={handleMapClick}
+            />
           </div>
 
-          <MapView 
-            userCoords={myCoords} 
-            searchCoords={searchCoords}
-            items={visibleItems} // 지도 핀 마커도 렉 최소화를 위해 10개만 표시
-            selectedDest={selectedDest} 
-            onSelect={handleSelectDestination} 
-            onMapClick={handleMapClick} // 지도를 클릭하면 임시 중심 좌표만 갱신
-          />
+          {/* 2분면 (2/10 너비): 주변 관광지 목록 */}
+          <div className="layout-panel panel-nearby" style={{ flex: 2 }}>
+            <h3 className="panel-title">📍 주변 관광지</h3>
+            {attractions.length === 0 ? (
+              <div className="status-text">주변 반경 150km 이내에 발견된 관광지나 축제가 없습니다. [주변검색]을 클릭해 보세요.</div>
+            ) : (
+              <>
+                <AttractionList items={visibleItems} onSelect={handleSelectDestination} />
+                {attractions.length > visibleCount && (
+                  <button onClick={handleLoadMore} className="load-more-btn">
+                    더보기 (+10) [전체 {attractions.length}개 중 {visibleCount}개]
+                  </button>
+                )}
+              </>
+            )}
+          </div>
 
-          {loading && !routeInfo && !selectedDest && (
-            <div className="status-text">
-              <span>데이터 로딩 중...</span>
-            </div>
-          )}
-          
-          {!loading && attractions.length === 0 && (
-            <div className="status-text">주변 반경 150km 이내에 발견된 관광지나 축제가 없습니다.</div>
-          )}
-
-          {attractions.length > 0 && (
-            <>
-              <AttractionList items={visibleItems} onSelect={handleSelectDestination} />
-              {attractions.length > visibleCount && (
-                <button onClick={handleLoadMore} className="load-more-btn">
-                  더보기 (+10) [전체 {attractions.length}개 중 {visibleCount}개 노출]
+          {/* 3분면 (2/10 너비): 선택된 관광지 상세 카드 */}
+          <div className="layout-panel panel-selected" style={{ flex: 2 }}>
+            <h3 className="panel-title">🎯 선택된 관광지</h3>
+            {selectedDest ? (
+              <div className="selected-detail-card card">
+                {selectedDest.firstimage && (
+                  <img src={selectedDest.firstimage} alt={selectedDest.title} className="detail-hero-img" />
+                )}
+                <h4>{selectedDest.title}</h4>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{selectedDest.addr1 || "상세 주소 없음"}</p>
+                <button onClick={handleFindRoute} className="bare-btn primary-bare-btn" style={{ width: '100%', marginTop: '1rem' }}>
+                  경로탐색 (대중교통)
                 </button>
-              )}
-            </>
-          )}
+              </div>
+            ) : (
+              <div className="status-text">지도 혹은 주변 관광지 목록에서 방문할 장소를 선택해 주세요.</div>
+            )}
+          </div>
 
-          {routeInfo && (
-            <RouteSummary route={routeInfo} destination={selectedDest} startCoords={searchCoords} />
-          )}
-        </main>
+          {/* 4분면 (2/10 너비): 경로 안내 */}
+          <div className="layout-panel panel-route" style={{ flex: 2 }}>
+            <h3 className="panel-title">🛣️ 경로 안내</h3>
+            {routeInfo ? (
+              <RouteSummary route={routeInfo} destination={selectedDest} startCoords={searchCoords} />
+            ) : (
+              <div className="status-text">
+                {selectedDest ? "선택한 관광지 상세 화면에서 [경로탐색] 버튼을 클릭해 주세요." : "장소 선택 및 경로탐색을 실행해 주세요."}
+              </div>
+            )}
+          </div>
+        </div>
       ) : (
         <div className="status-text">
           <span>사용자 위치를 탐색 중입니다...</span>

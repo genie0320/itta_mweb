@@ -11,40 +11,109 @@ body {
 }
 
 #root {
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
+  width: 100vw;
+  max-width: 100% !important;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #1e293b;
-  border-left: 1px solid #334155;
-  border-right: 1px solid #334155;
+  background: #0f172a;
 }
 
 .app-container {
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+header {
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 header h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #38bdf8;
   text-align: center;
+}
+
+/* 4:2:2:2 와이드 그리드 분할 레이아웃 */
+.main-layout {
+  display: flex;
+  flex: 1;
+  gap: 0.75rem;
+  overflow: hidden; /* 레이아웃이 화면 밖으로 터지지 않게 가둠 */
+  box-sizing: border-box;
+}
+
+/* 공통 분면 패널 스타일 */
+.layout-panel {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* 개별 독립 스크롤바 확보 */
+  box-sizing: border-box;
+}
+
+.panel-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #38bdf8;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* 1분면: 지도 패널 전용 */
+.panel-map {
+  overflow: hidden; /* 지도 내부 overflow 스크롤 방지 */
+}
+
+.map-view-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+}
+
+/* 3분면: 선택 관광지 디테일 카드 전용 */
+.detail-hero-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  background: #0f172a;
+}
+
+.selected-detail-card h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
 }
 
 /* Minimal Search Bar */
 .search-control-bar {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .bare-btn {
-  flex: 1;
   padding: 0.5rem;
   font-size: 0.85rem;
   font-weight: bold;
@@ -53,6 +122,11 @@ header h1 {
   border: 1px solid #475569;
   border-radius: 6px;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.bare-btn:hover {
+  opacity: 0.85;
 }
 
 .primary-bare-btn {
@@ -60,31 +134,11 @@ header h1 {
   border-color: #0369a1;
 }
 
-/* Map Wrappers */
-.map-view-wrapper {
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #334155;
-}
-
-.map-container {
-  width: 100%;
-  height: 250px;
-  background: #0f172a;
-}
-
 /* Card list minimal */
 .list-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.section-title {
-  font-size: 1rem;
-  margin: 0.5rem 0;
-  color: #94a3b8;
 }
 
 .card {
@@ -99,39 +153,54 @@ header h1 {
   gap: 0.75rem;
   cursor: pointer;
   align-items: center;
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.attraction-item:hover {
+  background: #334155;
 }
 
 .attraction-img {
-  width: 50px;
-  height: 50px;
-  border-radius: 6px;
+  width: 45px;
+  height: 45px;
+  border-radius: 4px;
   object-fit: cover;
   background: #0f172a;
+  flex-shrink: 0;
 }
 
 .attraction-info {
   flex: 1;
+  min-width: 0; /* 텍스트 오버플로우 방지 */
 }
 
 .attraction-name {
-  margin: 0 0 0.2rem 0;
-  font-size: 0.95rem;
+  margin: 0 0 0.15rem 0;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .attraction-addr {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .badge {
-  font-size: 0.7rem;
-  padding: 0.15rem 0.35rem;
-  border-radius: 4px;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
   font-weight: bold;
-  margin-right: 0.4rem;
+  margin-right: 0.3rem;
 }
 
 .badge-tour { background: #38bdf8; color: #0f172a; }
@@ -139,25 +208,27 @@ header h1 {
 
 /* Timeline transit minimal */
 .route-summary-panel {
-  border: 1px solid #0284c7;
-  background: #0f172a;
+  border: none;
+  padding: 0;
+  background: transparent;
 }
 
 .route-summary-panel h3 {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #38bdf8;
 }
 
 .route-summary-panel p {
   margin: 0.3rem 0;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  color: #e2e8f0;
 }
 
 .transit-flow-wrapper {
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background: #1e293b;
+  background: #0f172a;
   border-radius: 6px;
   border: 1px solid #334155;
 }
@@ -166,6 +237,7 @@ header h1 {
   font-size: 0.75rem;
   margin: 0 0 0.3rem 0;
   color: #94a3b8;
+  font-weight: bold;
 }
 
 .transit-flow-timeline {
@@ -173,31 +245,33 @@ header h1 {
   align-items: center;
   gap: 0.4rem;
   overflow-x: auto;
+  padding-bottom: 0.3rem;
 }
 
 .transit-step-badge {
-  font-size: 0.75rem;
-  padding: 0.2rem 0.4rem;
-  background: #334155;
-  border: 1px solid #475569;
-  color: #e2e8f0;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.35rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
   border-radius: 4px;
   white-space: nowrap;
 }
 
 .transit-arrow {
   color: #64748b;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 .button-group {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.4rem;
   margin-top: 0.75rem;
 }
 
 .map-btn {
-  flex: 1;
+  width: 100%;
   padding: 0.5rem;
   border-radius: 6px;
   border: none;
@@ -210,17 +284,54 @@ header h1 {
 .naver-btn { background: #2db400; color: white; }
 .kakao-btn { background: #ffeb00; color: #3c1e1e; }
 
+/* Detailed Transit Steps List */
+.transit-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.transit-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: #38bdf8;
+  color: #0f172a;
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-text {
+  flex: 1;
+}
+
 /* Status Text */
 .status-text {
   text-align: center;
-  color: #94a3b8;
-  padding: 2rem 0;
-  font-size: 0.9rem;
+  color: #64748b;
+  padding: 1.5rem 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .load-more-btn {
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.45rem;
   background: #1e293b;
   color: #38bdf8;
   border: 1px dashed #38bdf8;
@@ -228,6 +339,7 @@ header h1 {
   cursor: pointer;
   font-weight: bold;
   margin-top: 0.5rem;
+  font-size: 0.75rem;
 }
 
 .load-more-btn:hover {
@@ -248,11 +360,12 @@ header h1 {
 /* Linear Loading Bar Styles */
 .loading-bar-container {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: #334155;
-  border-radius: 2px;
+  border-radius: 1px;
   overflow: hidden;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  flex-shrink: 0;
 }
 
 .loading-bar-progress {
@@ -260,7 +373,6 @@ header h1 {
   height: 100%;
   background: #38bdf8;
   animation: loading-anim 1.2s infinite linear;
-  border-radius: 2px;
 }
 
 @keyframes loading-anim {
@@ -268,41 +380,3 @@ header h1 {
   50% { transform: translateX(120%); }
   100% { transform: translateX(250%); }
 }
-
-/* Detailed Transit Steps List */
-.transit-steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-top: 0.3rem;
-}
-
-.transit-step-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #e2e8f0;
-  line-height: 1.4;
-}
-
-.step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  background: #38bdf8;
-  color: #0f172a;
-  border-radius: 9999px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.step-text {
-  flex: 1;
-}
-
-
