@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.tour_service import get_nearby_attractions
 from services.odsay_service import get_transit_route
 
-app = FastAPI(title="Tiny Sherpa API")
+app = FastAPI(title="ITTAKO API")
 
 # 프론트엔드 연동을 위한 CORS 설정
 app.add_middleware(

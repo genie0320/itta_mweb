@@ -106,7 +106,7 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1>Tiny Sherpa 🗺️</h1>
+        <h1>ITTAKO 🗺️</h1>
       </header>
       {loading && (
         <div className="loading-bar-container">
