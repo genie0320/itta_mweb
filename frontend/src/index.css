@@ -1,13 +1,43 @@
+/* Default Light Mode CSS Variables */
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color-scheme: dark light;
-  color: #f1f5f9;
-  background-color: #0f172a;
+  --bg-app: #f1f5f9;        /* slate-100 */
+  --bg-panel: #ffffff;      /* white */
+  --border-color: #e2e8f0;  /* slate-200 */
+  --text-main: #0f172a;     /* slate-900 */
+  --text-muted: #64748b;    /* slate-500 */
+  --bg-card: #f8fafc;       /* slate-50 */
+  --btn-bg: #e2e8f0;
+  --btn-border: #cbd5e1;
+  --btn-text: #0f172a;
+  
+  color-scheme: light;
+  color: var(--text-main);
+  background-color: var(--bg-app);
+}
+
+/* Dark Mode Class Overrides */
+.app-container.theme-dark {
+  --bg-app: #0f172a;        /* slate-900 */
+  --bg-panel: #1e293b;      /* slate-800 */
+  --border-color: #334155;  /* slate-700 */
+  --text-main: #f1f5f9;     /* slate-100 */
+  --text-muted: #94a3b8;    /* slate-400 */
+  --bg-card: #0f172a;       /* slate-900 */
+  --btn-bg: #334155;
+  --btn-border: #475569;
+  --btn-text: #f1f5f9;
+  
+  color-scheme: dark;
+  color: var(--text-main);
+  background-color: var(--bg-app);
 }
 
 body {
   margin: 0;
-  background: #0f172a;
+  background: var(--bg-app);
+  color: var(--text-main);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #root {
@@ -15,7 +45,7 @@ body {
   max-width: 100% !important;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #0f172a;
+  background: var(--bg-app);
 }
 
 .app-container {
@@ -24,19 +54,30 @@ body {
   flex-direction: column;
   height: 100vh;
   box-sizing: border-box;
+  background: var(--bg-app);
+  color: var(--text-main);
+  transition: background-color 0.2s, color 0.2s;
 }
 
-header {
+/* Header style for Theme Switcher */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
   flex-shrink: 0;
 }
 
-header h1 {
+.app-header h1 {
   margin: 0;
   font-size: 1.35rem;
   font-weight: 800;
-  color: #38bdf8;
-  text-align: center;
+  color: #0284c7;
+}
+
+.theme-toggle-btn {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
 }
 
 /* 4:2:2:2 와이드 그리드 분할 레이아웃 */
@@ -44,35 +85,36 @@ header h1 {
   display: flex;
   flex: 1;
   gap: 0.75rem;
-  overflow: hidden; /* 레이아웃이 화면 밖으로 터지지 않게 가둠 */
+  overflow: hidden; 
   box-sizing: border-box;
 }
 
 /* 공통 분면 패널 스타일 */
 .layout-panel {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* 개별 독립 스크롤바 확보 */
+  overflow-y: auto; 
   box-sizing: border-box;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .panel-title {
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #38bdf8;
-  border-bottom: 1px solid #334155;
+  color: #0284c7;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 0.4rem;
   flex-shrink: 0;
 }
 
 /* 1분면: 지도 패널 전용 */
 .panel-map {
-  overflow: hidden; /* 지도 내부 overflow 스크롤 방지 */
+  overflow: hidden; 
 }
 
 .map-view-wrapper {
@@ -81,7 +123,7 @@ header h1 {
   height: 100%;
   border-radius: 6px;
   overflow: hidden;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-color);
 }
 
 .map-container {
@@ -97,13 +139,13 @@ header h1 {
   object-fit: cover;
   border-radius: 6px;
   margin-bottom: 0.75rem;
-  background: #0f172a;
+  background: var(--bg-app);
 }
 
 .selected-detail-card h4 {
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
-  color: #f8fafc;
+  color: var(--text-main);
 }
 
 /* Minimal Search Bar */
@@ -117,12 +159,12 @@ header h1 {
   padding: 0.5rem;
   font-size: 0.85rem;
   font-weight: bold;
-  background: #334155;
-  color: #f1f5f9;
-  border: 1px solid #475569;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: 1px solid var(--btn-border);
   border-radius: 6px;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, background-color 0.2s, color 0.2s;
 }
 
 .bare-btn:hover {
@@ -132,6 +174,7 @@ header h1 {
 .primary-bare-btn {
   background: #0284c7;
   border-color: #0369a1;
+  color: white !important;
 }
 
 /* Card list minimal */
@@ -142,10 +185,11 @@ header h1 {
 }
 
 .card {
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.75rem;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .attraction-item {
@@ -159,7 +203,7 @@ header h1 {
 }
 
 .attraction-item:hover {
-  background: #334155;
+  background: var(--border-color);
 }
 
 .attraction-img {
@@ -167,20 +211,20 @@ header h1 {
   height: 45px;
   border-radius: 4px;
   object-fit: cover;
-  background: #0f172a;
+  background: var(--bg-app);
   flex-shrink: 0;
 }
 
 .attraction-info {
   flex: 1;
-  min-width: 0; /* 텍스트 오버플로우 방지 */
+  min-width: 0; 
 }
 
 .attraction-name {
   margin: 0 0 0.15rem 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,7 +233,7 @@ header h1 {
 .attraction-addr {
   margin: 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -216,27 +260,27 @@ header h1 {
 .route-summary-panel h3 {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
-  color: #38bdf8;
+  color: #0284c7;
 }
 
 .route-summary-panel p {
   margin: 0.3rem 0;
   font-size: 0.8rem;
-  color: #e2e8f0;
+  color: var(--text-main);
 }
 
 .transit-flow-wrapper {
   margin-top: 0.5rem;
   padding: 0.5rem;
-  background: #0f172a;
+  background: var(--bg-app);
   border-radius: 6px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border-color);
 }
 
 .transit-flow-title {
   font-size: 0.75rem;
   margin: 0 0 0.3rem 0;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-weight: bold;
 }
 
@@ -251,15 +295,15 @@ header h1 {
 .transit-step-badge {
   font-size: 0.7rem;
   padding: 0.15rem 0.35rem;
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #cbd5e1;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   border-radius: 4px;
   white-space: nowrap;
 }
 
 .transit-arrow {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.7rem;
 }
 
@@ -297,7 +341,7 @@ header h1 {
   align-items: flex-start;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: #e2e8f0;
+  color: var(--text-main);
   line-height: 1.4;
 }
 
@@ -307,8 +351,8 @@ header h1 {
   justify-content: center;
   width: 14px;
   height: 14px;
-  background: #38bdf8;
-  color: #0f172a;
+  background: #0284c7;
+  color: white;
   border-radius: 9999px;
   font-size: 0.6rem;
   font-weight: 800;
@@ -323,7 +367,7 @@ header h1 {
 /* Status Text */
 .status-text {
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   padding: 1.5rem 0;
   font-size: 0.8rem;
   line-height: 1.5;
@@ -332,9 +376,9 @@ header h1 {
 .load-more-btn {
   width: 100%;
   padding: 0.45rem;
-  background: #1e293b;
-  color: #38bdf8;
-  border: 1px dashed #38bdf8;
+  background: var(--bg-panel);
+  color: #0284c7;
+  border: 1px dashed #0284c7;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
@@ -343,25 +387,25 @@ header h1 {
 }
 
 .load-more-btn:hover {
-  background: #334155;
+  background: var(--bg-card);
 }
 
 /* Minimal Leaflet Popup customization */
 .leaflet-popup-content-wrapper {
-  background: #1e293b !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #334155 !important;
+  background: var(--bg-panel) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color) !important;
   border-radius: 6px !important;
 }
 .leaflet-popup-tip {
-  background: #1e293b !important;
+  background: var(--bg-panel) !important;
 }
 
 /* Linear Loading Bar Styles */
 .loading-bar-container {
   width: 100%;
   height: 3px;
-  background: #334155;
+  background: var(--border-color);
   border-radius: 1px;
   overflow: hidden;
   margin-bottom: 0.4rem;
@@ -371,7 +415,7 @@ header h1 {
 .loading-bar-progress {
   width: 35%;
   height: 100%;
-  background: #38bdf8;
+  background: #0284c7;
   animation: loading-anim 1.2s infinite linear;
 }
 

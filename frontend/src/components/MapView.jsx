@@ -37,12 +37,19 @@ const festivalIcon = L.icon({
   popupAnchor: [0, -36]
 });
 
-function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapClick }) {
+function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapClick, theme }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const tileLayerRef = useRef(null); // 실시간 지도 타일 스위칭용 레퍼런스
   const markersLayerRef = useRef(null);
   const userMarkerRef = useRef(null);
   const searchMarkerRef = useRef(null);
+
+  // 국토교통부 브이월드 2D 공공 한글 지도 타일셋 URL 정의
+  const MAP_URLS = {
+    light: 'https://xdworld.vworld.kr/2d/Base/service/{z}/{x}/{y}.png',
+    dark: 'https://xdworld.vworld.kr/2d/midnight/service/{z}/{x}/{y}.png'
+  };
 
   // 1. 지도 초기화 (최초 1회 실행)
   useEffect(() => {
@@ -62,11 +69,13 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
         zoomControl: false
       }).setView([initialLat, initialLng], 12);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
+      const initialUrl = MAP_URLS[theme] || MAP_URLS.light;
+      const tileLayer = L.tileLayer(initialUrl, {
+        attribution: '&copy; 국토교통부 브이월드',
+        maxZoom: 19
       }).addTo(map);
+
+      tileLayerRef.current = tileLayer;
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -77,7 +86,7 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
         }
       });
 
-      // 맵 생성 완료 즉시 사용자 위치(파란색) 및 탐색지(주황색) 마커 핀 강제 강제 주입
+      // 맵 생성 완료 즉시 사용자 위치(파란색) 및 탐색지(주황색) 마커 핀 강제 주입
       if (userCoords) {
         userMarkerRef.current = L.marker([userCoords.lat, userCoords.lng], { icon: userIcon })
           .addTo(map)
@@ -102,6 +111,13 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
       }
     };
   }, []);
+
+  // 테마 변경 감지 시 지도 타일 실시간 변경 (한글화 유지)
+  useEffect(() => {
+    if (!tileLayerRef.current) return;
+    const newUrl = MAP_URLS[theme] || MAP_URLS.light;
+    tileLayerRef.current.setUrl(newUrl);
+  }, [theme]);
 
   // 2. 사용자 위치 마커 업데이트 (실제 GPS 위치)
   useEffect(() => {

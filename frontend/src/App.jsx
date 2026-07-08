@@ -6,6 +6,7 @@ import MapView from './components/MapView';
 function App() {
   const [myCoords, setMyCoords] = useState(null);
   const [searchCoords, setSearchCoords] = useState(null); // 실제 검색 중심 (주황색 핀 위치)
+  const [theme, setTheme] = useState('light'); // 다크/라이트 테마 상태 (디폴트: 라이트)
   const [attractions, setAttractions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(10); // 클라이언트 단 노출 개수 (초기 10)
   const [selectedDest, setSelectedDest] = useState(null);
@@ -21,7 +22,7 @@ function App() {
           const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setMyCoords(coords);
           setSearchCoords(coords);
-          fetchAttractions(coords);
+          fetchAttractions(coords, 150000); // 디폴트 150km (8시간 이상)
         },
         (err) => {
           console.error("GPS 작동 권한이 거부되었거나 오류가 발생했습니다.", err);
@@ -29,7 +30,7 @@ function App() {
           setMyCoords(defaultCoords);
           setSearchCoords(defaultCoords);
           setErrorMsg("위치 권한을 획득할 수 없어 기본 위치(서울역)로 검색합니다.");
-          fetchAttractions(defaultCoords);
+          fetchAttractions(defaultCoords, 150000);
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -38,15 +39,15 @@ function App() {
       const defaultCoords = { lat: 37.5546, lng: 126.9706 };
       setMyCoords(defaultCoords);
       setSearchCoords(defaultCoords);
-      fetchAttractions(defaultCoords);
+      fetchAttractions(defaultCoords, 150000);
     }
   }, []);
 
-  const fetchAttractions = async (coords) => {
+  const fetchAttractions = async (coords, radiusM = 150000) => {
     setLoading(true);
     setVisibleCount(10); // 새 검색 시 항상 노출 한도를 10개로 초기화
     try {
-      const res = await fetch(`/api/explore?lat=${coords.lat}&lng=${coords.lng}&radius=150000`);
+      const res = await fetch(`/api/explore?lat=${coords.lat}&lng=${coords.lng}&radius=${radiusM}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAttractions(data.response?.body?.items?.item || []);
@@ -61,12 +62,6 @@ function App() {
   // 지도 클릭 핸들러: 주황색 탐색 핀의 좌표만 갱신하며 API를 자동 호출하지 않음
   const handleMapClick = (newCoords) => {
     setSearchCoords(newCoords);
-  };
-
-  // 수동 [주변검색] 트리거
-  const handleSearchNearby = () => {
-    if (!searchCoords) return;
-    fetchAttractions(searchCoords);
   };
 
   const handleSelectDestination = async (dest) => {
@@ -104,9 +99,12 @@ function App() {
   const visibleItems = attractions.slice(0, visibleCount);
 
   return (
-    <div className="app-container">
-      <header>
+    <div className={`app-container theme-${theme}`}>
+      <header className="app-header">
         <h1>ITTAKO 🗺️</h1>
+        <button onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} className="bare-btn theme-toggle-btn">
+          {theme === 'light' ? '🌙 다크모드' : '☀️ 라이트모드'}
+        </button>
       </header>
       {loading && (
         <div className="loading-bar-container">
@@ -119,8 +117,10 @@ function App() {
         <div className="main-layout">
           {/* 1분면 (4/10 너비): 지도 및 탐색 컨트롤 */}
           <div className="layout-panel panel-map" style={{ flex: 4 }}>
-            <div className="search-control-bar" style={{ marginBottom: '0.75rem' }}>
-              <button onClick={handleSearchNearby} className="bare-btn primary-bare-btn" style={{ width: '100%' }}>주변검색 (150km)</button>
+            <div className="search-control-bar" style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.3rem' }}>
+              <button onClick={() => fetchAttractions(searchCoords, 50000)} className="bare-btn primary-bare-btn" style={{ flex: 1 }}>3시간 여행 (~50km)</button>
+              <button onClick={() => fetchAttractions(searchCoords, 100000)} className="bare-btn primary-bare-btn" style={{ flex: 1 }}>6시간 여행 (~100km)</button>
+              <button onClick={() => fetchAttractions(searchCoords, 150000)} className="bare-btn primary-bare-btn" style={{ flex: 1 }}>8시간 이상 (~150km)</button>
             </div>
             <MapView 
               userCoords={myCoords} 
@@ -129,6 +129,7 @@ function App() {
               selectedDest={selectedDest} 
               onSelect={handleSelectDestination} 
               onMapClick={handleMapClick}
+              theme={theme}
             />
           </div>
 
