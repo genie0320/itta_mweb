@@ -20,7 +20,7 @@ services:
       - ./frontend:/app
       - /app/node_modules # 로컬 node_modules가 컨테이너의 node_modules를 덮어쓰지 못하도록 바인드 방지
     ports:
-      - "5173:5173"
+      - "3173:3173"
 
   nginx:
     build:

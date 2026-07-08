@@ -61,5 +61,5 @@ docker compose up --build
 
 ### 3. 브라우저 접속
 서버 가동이 정상적으로 끝나면 아래 주소 중 편한 경로로 접속합니다:
-- **Vite 개발 서버 접속 (권장)**: `http://localhost:5173` (백엔드 프록시 라우팅 자동 지원)
+- **Vite 개발 서버 접속 (권장)**: `http://localhost:3173` (백엔드 프록시 라우팅 자동 지원)
 - **Nginx HTTPS 프록시 접속**: `https://localhost` (브라우저 자체의 Geolocation 연동 보장)
