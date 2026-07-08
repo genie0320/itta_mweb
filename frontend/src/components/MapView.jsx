@@ -37,7 +37,7 @@ const festivalIcon = L.icon({
   popupAnchor: [0, -36]
 });
 
-function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapClick }) {
+function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapMoveEnd }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersLayerRef = useRef(null);
@@ -48,13 +48,19 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    if (!mapRef.current) {
-      const initialLat = userCoords ? userCoords.lat : 37.5546;
-      const initialLng = userCoords ? userCoords.lng : 126.9706;
+    // 만약 이미 map 인스턴스가 존재한다면 제거하여 중복 초기화 에러 방지
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
+    const initialLat = searchCoords ? searchCoords.lat : (userCoords ? userCoords.lat : 37.5546);
+    const initialLng = searchCoords ? searchCoords.lng : (userCoords ? userCoords.lng : 126.9706);
+
+    try {
       const map = L.map(mapContainerRef.current, {
         zoomControl: false
-      }).setView([initialLat, initialLng], 13);
+      }).setView([initialLat, initialLng], 12);
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -64,15 +70,18 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // 지도 클릭 시 좌표 획득 및 콜백 이벤트 트리거
-      map.on('click', (e) => {
-        if (onMapClick) {
-          onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
+      // 지도 드래그/줌이 끝난 시점에 중심 좌표를 수집하여 상위 컴포넌트로 전송
+      map.on('moveend', () => {
+        if (onMapMoveEnd) {
+          const center = map.getCenter();
+          onMapMoveEnd({ lat: center.lat, lng: center.lng });
         }
       });
 
       mapRef.current = map;
       markersLayerRef.current = L.layerGroup().addTo(map);
+    } catch (err) {
+      console.error("Leaflet map initialization error:", err);
     }
 
     return () => {
@@ -109,7 +118,7 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
     } else {
       searchMarkerRef.current = L.marker([lat, lng], { icon: searchIcon })
         .addTo(mapRef.current)
-        .bindPopup('<b>탐색 중심지 (반경 150km)</b><br/>지도를 클릭하여 이동할 수 있습니다.');
+        .bindPopup('<b>탐색 중심지 (반경 150km)</b>');
     }
   }, [searchCoords]);
 
@@ -174,9 +183,9 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
     const lng = parseFloat(selectedDest.mapx);
     if (isNaN(lat) || isNaN(lng)) return;
 
-    mapRef.current.flyTo([lat, lng], 15, {
+    mapRef.current.flyTo([lat, lng], 14, {
       animate: true,
-      duration: 1.5
+      duration: 1.2
     });
   }, [selectedDest]);
 

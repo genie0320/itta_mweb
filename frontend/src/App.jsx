@@ -5,8 +5,10 @@ import MapView from './components/MapView';
 
 function App() {
   const [myCoords, setMyCoords] = useState(null);
-  const [searchCoords, setSearchCoords] = useState(null); // 지도를 클릭해 지정한 가상의 탐색 중심 좌표
+  const [searchCoords, setSearchCoords] = useState(null); // 실제 검색 기준 좌표 (핀 위치)
+  const [mapCenter, setMapCenter] = useState(null); // 지도가 움직여서 대기 중인 임시 중심 좌표
   const [attractions, setAttractions] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(10); // 클라이언트 단 노출 개수 (초기 10)
   const [selectedDest, setSelectedDest] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,15 +21,16 @@ function App() {
         (pos) => {
           const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setMyCoords(coords);
-          setSearchCoords(coords); // 첫 진입 시 탐색 중심도 내 위치로 동기화
+          setSearchCoords(coords);
+          setMapCenter(coords);
           fetchAttractions(coords);
         },
         (err) => {
           console.error("GPS 작동 권한이 거부되었거나 오류가 발생했습니다.", err);
-          // 권한 거부 시 예외 처리: 서울역 중심의 기본 좌표 설정
           const defaultCoords = { lat: 37.5546, lng: 126.9706 };
           setMyCoords(defaultCoords);
           setSearchCoords(defaultCoords);
+          setMapCenter(defaultCoords);
           setErrorMsg("위치 권한을 획득할 수 없어 기본 위치(서울역)로 검색합니다.");
           fetchAttractions(defaultCoords);
         },
@@ -38,14 +41,15 @@ function App() {
       const defaultCoords = { lat: 37.5546, lng: 126.9706 };
       setMyCoords(defaultCoords);
       setSearchCoords(defaultCoords);
+      setMapCenter(defaultCoords);
       fetchAttractions(defaultCoords);
     }
   }, []);
 
   const fetchAttractions = async (coords) => {
     setLoading(true);
+    setVisibleCount(10); // 새 검색 시 항상 노출 한도를 10개로 초기화
     try {
-      // 150km (150000m) 반경 쿼리 고정
       const res = await fetch(`/api/explore?lat=${coords.lat}&lng=${coords.lng}&radius=150000`);
       const data = await res.json();
       setAttractions(data.response?.body?.items?.item || []);
@@ -57,10 +61,19 @@ function App() {
     }
   };
 
-  // 지도 클릭 핸들러: 탐색 중심 변경 및 150km 범위 재검색
-  const handleMapClick = (newCoords) => {
-    setSearchCoords(newCoords);
-    fetchAttractions(newCoords);
+  // 수동 검색 트리거 (내 실제 GPS 위치 기준)
+  const handleSearchMyCoords = () => {
+    if (!myCoords) return;
+    setSearchCoords(myCoords);
+    setMapCenter(myCoords);
+    fetchAttractions(myCoords);
+  };
+
+  // 수동 검색 트리거 (지도를 조작해서 도달한 지도 중심 기준)
+  const handleSearchMapCenter = () => {
+    if (!mapCenter) return;
+    setSearchCoords(mapCenter);
+    fetchAttractions(mapCenter);
   };
 
   const handleSelectDestination = async (dest) => {
@@ -68,7 +81,6 @@ function App() {
     setRouteInfo(null);
     setLoading(true);
     try {
-      // 출발 좌표는 지도의 클릭 위치(searchCoords)가 아니라, 본래 실제 내 위치(myCoords)로 고정하여 경로 검색
       const res = await fetch(`/api/route?sx=${myCoords.lng}&sy=${myCoords.lat}&ex=${dest.mapx}&ey=${dest.mapy}`);
       const data = await res.json();
       setRouteInfo(data);
@@ -80,6 +92,14 @@ function App() {
     }
   };
 
+  // 페이징: 더보기 처리
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 10);
+  };
+
+  // 노출 개수 한도로 필터링된 슬라이스 아이템 목록
+  const visibleItems = attractions.slice(0, visibleCount);
+
   return (
     <div className="app-container">
       <header>
@@ -89,20 +109,24 @@ function App() {
       
       {myCoords ? (
         <main>
-          {/* 지도 뷰어 상단 렌더링 */}
+          {/* 수동 검색 실행용 미니멀 버튼 배치 */}
+          <div className="search-control-bar">
+            <button onClick={handleSearchMyCoords} className="bare-btn">내 위치 기준 검색</button>
+            <button onClick={handleSearchMapCenter} className="bare-btn primary-bare-btn">이 지도 중심 검색</button>
+          </div>
+
           <MapView 
             userCoords={myCoords} 
             searchCoords={searchCoords}
-            items={attractions} 
+            items={visibleItems} // 지도 핀 마커도 렉 최소화를 위해 10개만 표시
             selectedDest={selectedDest} 
             onSelect={handleSelectDestination} 
-            onMapClick={handleMapClick}
+            onMapMoveEnd={setMapCenter} // 지도가 움직여 멈추면 임시 중심 갱신
           />
 
           {loading && !routeInfo && !selectedDest && (
             <div className="status-text">
-              <div className="spinner"></div>
-              <span>데이터를 로드하는 중입니다...</span>
+              <span>데이터 로딩 중...</span>
             </div>
           )}
           
@@ -111,7 +135,14 @@ function App() {
           )}
 
           {attractions.length > 0 && (
-            <AttractionList items={attractions} onSelect={handleSelectDestination} />
+            <>
+              <AttractionList items={visibleItems} onSelect={handleSelectDestination} />
+              {attractions.length > visibleCount && (
+                <button onClick={handleLoadMore} className="load-more-btn">
+                  더보기 (+10) [전체 {attractions.length}개 중 {visibleCount}개 노출]
+                </button>
+              )}
+            </>
           )}
 
           {routeInfo && (
@@ -120,7 +151,6 @@ function App() {
         </main>
       ) : (
         <div className="status-text">
-          <div className="spinner"></div>
           <span>사용자 위치를 탐색 중입니다...</span>
         </div>
       )}
