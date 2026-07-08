@@ -10,5 +10,11 @@ export default defineConfig({
     watch: {
       usePolling: true, // Docker 볼륨 마운트 시 파일 감지를 위해 폴링 활성화
     },
+    proxy: {
+      '/api': {
+        target: 'http://backend:8000',
+        changeOrigin: true
+      }
+    }
   },
 });

@@ -51,11 +51,12 @@ function App() {
     setVisibleCount(10); // 새 검색 시 항상 노출 한도를 10개로 초기화
     try {
       const res = await fetch(`/api/explore?lat=${coords.lat}&lng=${coords.lng}&radius=150000`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAttractions(data.response?.body?.items?.item || []);
     } catch (err) {
       console.error(err);
-      setErrorMsg("관광 정보를 불러오는 중 오류가 발생했습니다.");
+      setErrorMsg(`관광 정보를 불러오는 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -82,11 +83,12 @@ function App() {
     setLoading(true);
     try {
       const res = await fetch(`/api/route?sx=${myCoords.lng}&sy=${myCoords.lat}&ex=${dest.mapx}&ey=${dest.mapy}`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setRouteInfo(data);
     } catch (err) {
       console.error(err);
-      setErrorMsg("대중교통 경로 정보를 요약하는 중 오류가 발생했습니다.");
+      setErrorMsg(`대중교통 경로 정보를 요약하는 중 오류가 발생했습니다: ${err.message}`);
     } finally {
       setLoading(false);
     }
