@@ -4,6 +4,12 @@
 !.env.example
 !example.local.env
 
+.*
+_*
+.*/
+_*/
+
+
 # Python (Backend)
 __pycache__/
 *.py[cod]

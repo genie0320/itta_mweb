@@ -77,7 +77,7 @@ function App() {
     setRouteInfo(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/route?sx=${myCoords.lng}&sy=${myCoords.lat}&ex=${dest.mapx}&ey=${dest.mapy}`);
+      const res = await fetch(`/api/route?sx=${searchCoords.lng}&sy=${searchCoords.lat}&ex=${dest.mapx}&ey=${dest.mapy}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setRouteInfo(data);
@@ -147,7 +147,7 @@ function App() {
           )}
 
           {routeInfo && (
-            <RouteSummary route={routeInfo} destination={selectedDest} />
+            <RouteSummary route={routeInfo} destination={selectedDest} startCoords={searchCoords} />
           )}
         </main>
       ) : (

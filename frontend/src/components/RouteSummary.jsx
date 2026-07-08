@@ -1,7 +1,7 @@
 import React from 'react';
 import { launchExternalMap } from '../utils/deeplink';
 
-function RouteSummary({ route, destination }) {
+function RouteSummary({ route, destination, startCoords }) {
   const destData = {
     lat: destination.mapy,
     lng: destination.mapx,
@@ -28,13 +28,27 @@ function RouteSummary({ route, destination }) {
           </div>
         </div>
       )}
+
+      {route.steps && route.steps.length > 0 && (
+        <div className="transit-flow-wrapper" style={{ marginTop: '0.5rem' }}>
+          <p className="transit-flow-title">📝 상세 이동 경로 단계</p>
+          <div className="transit-steps-list">
+            {route.steps.map((step, idx) => (
+              <div key={idx} className="transit-step-item">
+                <span className="step-number">{idx + 1}</span>
+                <span className="step-text">{step.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="button-group">
-        <button className="map-btn naver-btn" onClick={() => launchExternalMap('naver', destData)}>
+        <button className="map-btn naver-btn" onClick={() => launchExternalMap('naver', destData, startCoords)}>
           네이버 지도로 실제 길찾기 시작
         </button>
-        <button className="map-btn kakao-btn" onClick={() => launchExternalMap('kakao', destData)}>
-          카카오맵으로 실제 길찾기 시작
+        <button className="map-btn kakao-btn" onClick={() => launchExternalMap('kakao', destData, startCoords)}>
+          카카오 지도로 실제 길찾기 시작
         </button>
       </div>
     </div>
