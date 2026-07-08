@@ -107,6 +107,11 @@ function App() {
       <header>
         <h1>Tiny Sherpa 🗺️</h1>
       </header>
+      {loading && (
+        <div className="loading-bar-container">
+          <div className="loading-bar-progress"></div>
+        </div>
+      )}
       {errorMsg && <div style={{ color: '#ef4444', marginBottom: '1rem', fontSize: '0.85rem', textAlign: 'center', padding: '0 1rem' }}>{errorMsg}</div>}
       
       {myCoords ? (

@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 FILE_PATH = "/app/data/전국문화축제표준데이터-20260707.xls"
+CACHE_PATH = "/app/data/festivals.pkl"
 df_festivals = None
 
 def load_festival_data():
@@ -11,27 +12,41 @@ def load_festival_data():
     if df_festivals is not None:
         return df_festivals
     
+    # 1. 고속 캐시 파일(Pickle)이 존재하는 경우 즉시 로드
+    if os.path.exists(CACHE_PATH):
+        try:
+            df_festivals = pd.read_pickle(CACHE_PATH)
+            print(f"Successfully loaded {len(df_festivals)} local festivals from pickle cache in <0.1s.")
+            return df_festivals
+        except Exception as e:
+            print(f"Failed to load local festival cache, falling back to raw Excel: {e}")
+
     if not os.path.exists(FILE_PATH):
         print(f"Error: Local festival file not found at {FILE_PATH}")
         return None
         
     try:
-        # 파일 로드 (xls 포맷)
+        # 2. 캐시가 없으면 엑셀 로드 및 전처리
         raw_df = pd.read_excel(FILE_PATH)
-        # 첫 번째 행을 실제 컬럼 헤더명으로 매핑
         raw_df.columns = raw_df.iloc[0]
-        # 헤더로 승격시켰으므로 첫 번째 행을 데이터 슬라이스에서 배제하고 인덱스 리셋
         df_festivals = raw_df[1:].reset_index(drop=True)
         
-        # 위도/경도를 수치형 float 데이터로 강제 변환 (오류 값은 NaN 처리)
         df_festivals["위도"] = pd.to_numeric(df_festivals["위도"], errors='coerce')
         df_festivals["경도"] = pd.to_numeric(df_festivals["경도"], errors='coerce')
-        
-        # 위경도가 유실되어 위치기반 탐색이 불가능한 행 드랍
         df_festivals = df_festivals.dropna(subset=["위도", "경도"])
         
-        print(f"Successfully loaded and preprocessed {len(df_festivals)} local festivals from Excel database.")
+        # 다음번 고속 로딩을 위해 전처리 완료된 데이터프레임을 캐시로 저장
+        try:
+            df_festivals.to_pickle(CACHE_PATH)
+            print("Successfully cached preprocessed local festival database to pickle.")
+        except Exception as cache_err:
+            print(f"Warning: Failed to save pickle cache: {cache_err}")
+
+        print(f"Successfully loaded and preprocessed {len(df_festivals)} local festivals from raw Excel database.")
         return df_festivals
+    except Exception as e:
+        print(f"Error preprocessing local festival data: {e}")
+        return None
     except Exception as e:
         print(f"Error preprocessing local festival data: {e}")
         return None
