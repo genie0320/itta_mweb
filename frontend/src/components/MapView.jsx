@@ -37,7 +37,7 @@ const festivalIcon = L.icon({
   popupAnchor: [0, -36]
 });
 
-function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapMoveEnd }) {
+function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMapClick }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markersLayerRef = useRef(null);
@@ -70,11 +70,10 @@ function MapView({ userCoords, searchCoords, items, selectedDest, onSelect, onMa
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-      // 지도 드래그/줌이 끝난 시점에 중심 좌표를 수집하여 상위 컴포넌트로 전송
-      map.on('moveend', () => {
-        if (onMapMoveEnd) {
-          const center = map.getCenter();
-          onMapMoveEnd({ lat: center.lat, lng: center.lng });
+      // 지도 클릭 시 좌표 획득 및 상위 컴포넌트 전달
+      map.on('click', (e) => {
+        if (onMapClick) {
+          onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
         }
       });
 

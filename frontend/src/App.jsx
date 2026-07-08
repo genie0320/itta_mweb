@@ -5,8 +5,7 @@ import MapView from './components/MapView';
 
 function App() {
   const [myCoords, setMyCoords] = useState(null);
-  const [searchCoords, setSearchCoords] = useState(null); // 실제 검색 기준 좌표 (핀 위치)
-  const [mapCenter, setMapCenter] = useState(null); // 지도가 움직여서 대기 중인 임시 중심 좌표
+  const [searchCoords, setSearchCoords] = useState(null); // 실제 검색 중심 (주황색 핀 위치)
   const [attractions, setAttractions] = useState([]);
   const [visibleCount, setVisibleCount] = useState(10); // 클라이언트 단 노출 개수 (초기 10)
   const [selectedDest, setSelectedDest] = useState(null);
@@ -22,7 +21,6 @@ function App() {
           const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setMyCoords(coords);
           setSearchCoords(coords);
-          setMapCenter(coords);
           fetchAttractions(coords);
         },
         (err) => {
@@ -30,7 +28,6 @@ function App() {
           const defaultCoords = { lat: 37.5546, lng: 126.9706 };
           setMyCoords(defaultCoords);
           setSearchCoords(defaultCoords);
-          setMapCenter(defaultCoords);
           setErrorMsg("위치 권한을 획득할 수 없어 기본 위치(서울역)로 검색합니다.");
           fetchAttractions(defaultCoords);
         },
@@ -41,7 +38,6 @@ function App() {
       const defaultCoords = { lat: 37.5546, lng: 126.9706 };
       setMyCoords(defaultCoords);
       setSearchCoords(defaultCoords);
-      setMapCenter(defaultCoords);
       fetchAttractions(defaultCoords);
     }
   }, []);
@@ -62,22 +58,21 @@ function App() {
     }
   };
 
-  // 수동 검색 트리거 (내 실제 GPS 위치 기준)
-  const handleSearchMyCoords = () => {
-    if (!myCoords) return;
-    setSearchCoords(myCoords);
-    setMapCenter(myCoords);
-    fetchAttractions(myCoords);
+  // 지도 클릭 핸들러: 주황색 탐색 핀의 좌표만 갱신하며 API를 자동 호출하지 않음
+  const handleMapClick = (newCoords) => {
+    setSearchCoords(newCoords);
   };
 
-  // 수동 검색 트리거 (지도를 조작해서 도달한 지도 중심 기준)
-  const handleSearchMapCenter = () => {
-    if (!mapCenter) return;
-    setSearchCoords(mapCenter);
-    fetchAttractions(mapCenter);
+  // 수동 [주변검색] 트리거
+  const handleSearchNearby = () => {
+    if (!searchCoords) return;
+    fetchAttractions(searchCoords);
   };
 
   const handleSelectDestination = async (dest) => {
+    // 선택된 장소의 좌표값을 브라우저 alert로 출력
+    alert(`선택한 장소: ${dest.title}\n위도: ${dest.mapy}\n경도: ${dest.mapx}`);
+
     setSelectedDest(dest);
     setRouteInfo(null);
     setLoading(true);
@@ -116,10 +111,9 @@ function App() {
       
       {myCoords ? (
         <main>
-          {/* 수동 검색 실행용 미니멀 버튼 배치 */}
+          {/* 수동 검색 실행용 [주변검색] 버튼 배치 */}
           <div className="search-control-bar">
-            <button onClick={handleSearchMyCoords} className="bare-btn">내 위치 기준 검색</button>
-            <button onClick={handleSearchMapCenter} className="bare-btn primary-bare-btn">이 지도 중심 검색</button>
+            <button onClick={handleSearchNearby} className="bare-btn primary-bare-btn">주변검색</button>
           </div>
 
           <MapView 
@@ -128,7 +122,7 @@ function App() {
             items={visibleItems} // 지도 핀 마커도 렉 최소화를 위해 10개만 표시
             selectedDest={selectedDest} 
             onSelect={handleSelectDestination} 
-            onMapMoveEnd={setMapCenter} // 지도가 움직여 멈추면 임시 중심 갱신
+            onMapClick={handleMapClick} // 지도를 클릭하면 임시 중심 좌표만 갱신
           />
 
           {loading && !routeInfo && !selectedDest && (
